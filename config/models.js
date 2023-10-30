@@ -15,7 +15,8 @@ var async = require("async");
  */
 module.exports.models = {
     datastore: 'default',
-    migrate: 'alter',
+    /* Fix: Failed to lift app: Error: `migrate: 'alter'` strategy is not supported in production, please change to `migrate: 'safe'`. */
+    migrate: 'safe', // 'alter',
     fetchRecordsOnUpdate: true,
     fetchRecordsOnDestroy: true,
     fetchRecordsOnCreate: true,
@@ -46,13 +47,13 @@ module.exports.models = {
     seed: async function () {
         var self = this;
         var modelName = this.identity.charAt(0).toUpperCase() + this.identity.slice(1);
-        
+
         if (!self.seedData) {
-            sails.log.debug('No data available to seed ' + modelName);            
+            sails.log.debug('No data available to seed ' + modelName);
             return;
         }
 
-        var count = await self.count();            
+        var count = await self.count();
 
         if(count === 0) {
             sails.log.debug('Seeding ' + modelName + '...');
@@ -66,7 +67,7 @@ module.exports.models = {
                 // Update records
                 await self.updateRecords();
             }else{
-                sails.log.debug(modelName + ' had models, so no seed needed');                   
+                sails.log.debug(modelName + ' had models, so no seed needed');
             }
         }
     },
@@ -86,10 +87,10 @@ module.exports.models = {
             if(updateItem) data.push(_.merge(seed, updateItem));
         });
 
-        data.forEach(async function (item) {            
+        data.forEach(async function (item) {
             await self.update({
                 id :item.id
-            },_.omit(item, ["id"]));            
+            },_.omit(item, ["id"]));
         });
     },
 
@@ -97,12 +98,12 @@ module.exports.models = {
         var self = this;
         var modelName = self.identity.charAt(0).toUpperCase() + self.identity.slice(1);
         await self.createEach(self.seedData)
-        sails.log.debug(modelName + ' seed planted');                
+        sails.log.debug(modelName + ' seed planted');
     },
     seedObject: async function () {
         var self = this;
         var modelName = self.identity.charAt(0).toUpperCase() + self.identity.slice(1);
         await self.create(self.seedData);
-        sails.log.debug(modelName + ' seed planted');      
+        sails.log.debug(modelName + ' seed planted');
     }
 };
